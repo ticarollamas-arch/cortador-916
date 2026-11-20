@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cortador 9:16 — cortes verticais com legenda por IA local</title>
+<meta name="description" content="Cole um link do YouTube, escolha 60 ou 90 segundos e baixe cortes verticais 9:16 com legenda gerada por IA rodando no seu próprio servidor.">
+<meta name="theme-color" content="#0B1220">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<style>
+:root{
+  --bg1:#0B1220;--bg2:#111C33;--grid:#1E293B;--card:#0F172A;--line:#1E293B;
+  --txt:#E6EDF7;--mut:#94A3B8;--dim:#64748B;
+  --cy:#22D3EE;--vi:#8B5CF6;--grad:linear-gradient(90deg,#22D3EE,#8B5CF6);
+  --ok:#22D3EE;--err:#F87171;
+  --mono:"JetBrains Mono",Consolas,monospace;
+}
+*{box-sizing:border-box}
+html{background:var(--bg1)}
+body{margin:0;min-height:100vh;color:var(--txt);font:16px/1.55 "Segoe UI",Inter,Helvetica,Arial,sans-serif;
+  background:
+    linear-gradient(var(--grid) 1px,transparent 1px) 0 0/32px 32px,
+    linear-gradient(90deg,var(--grid) 1px,transparent 1px) 0 0/32px 32px,
+    linear-gradient(135deg,var(--bg1),var(--bg2));
+  background-blend-mode:normal;}
+body::before{content:"";position:fixed;inset:0;background:linear-gradient(135deg,rgba(11,18,32,.55),rgba(17,28,51,.7));pointer-events:none;z-index:-1}
+main{max-width:800px;margin:0 auto;padding:48px 20px 80px;position:relative}
+header{display:flex;align-items:center;gap:18px;margin-bottom:8px}
+header svg{flex:none}
+h1{margin:0;font-size:34px;letter-spacing:-.5px;font-weight:700}
+h1 span{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{color:var(--mut);margin:6px 0 4px}
+.tags{font-family:var(--mono);color:var(--cy);font-size:13px;margin:0 0 30px}
+.card{background:rgba(15,23,42,.88);border:1px solid var(--line);border-radius:16px;padding:24px;margin-bottom:20px;position:relative;overflow:hidden}
+.card.acc::after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;background:var(--grad)}
+label.t{display:block;font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:var(--mut);margin:0 0 8px;font-weight:600}
+input[type=text],input[type=password],select{width:100%;padding:14px 16px;border-radius:10px;border:1px solid var(--line);background:var(--bg1);color:var(--txt);font-size:16px;font-family:inherit}
+input:focus,select:focus{outline:2px solid var(--cy);border-color:transparent}
+.linha{display:flex;gap:20px;flex-wrap:wrap;margin-top:20px}.linha>div{flex:1;min-width:200px}
+.opcoes{display:flex;gap:10px}.opcoes input{position:absolute;opacity:0;pointer-events:none}
+.opcoes label{flex:1;text-align:center;padding:13px 0;border:1px solid var(--line);border-radius:10px;cursor:pointer;font-size:18px;font-weight:700;background:var(--bg1);transition:.15s}
+.opcoes label:hover{border-color:var(--dim)}
+.opcoes input:checked+label{background:var(--grad);color:var(--bg1);border-color:transparent}
+.opcoes input:focus-visible+label{outline:2px solid var(--cy)}
+button{border:0;border-radius:12px;font-weight:700;cursor:pointer;font-size:17px;font-family:inherit}
+#go{width:100%;margin-top:24px;padding:16px;background:var(--grad);color:var(--bg1)}
+#go:disabled{opacity:.45;cursor:wait}
+.barra{height:12px;background:var(--bg1);border-radius:99px;overflow:hidden;border:1px solid var(--line)}
+.barra i{display:block;height:100%;width:0;background:var(--grad);transition:width .4s}
+.etapa{display:flex;justify-content:space-between;margin-top:10px;color:var(--mut);font-family:var(--mono);font-size:14px}
+.erro{color:var(--err);margin-top:12px;font-weight:600}
+.cortes{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
+.corte{background:rgba(15,23,42,.92);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
+.corte video{width:100%;aspect-ratio:9/16;background:#000;display:block}
+.corte .info{padding:12px;font-size:13px;color:var(--mut);flex:1}
+.corte .info b{color:var(--txt);font-family:var(--mono);font-weight:500}
+.corte .pq{display:block;margin-top:6px;font-family:var(--mono);font-size:11px;color:var(--dim)}
+.dl{display:block;margin:0 12px 12px;padding:12px;background:var(--grad);color:var(--bg1);text-align:center;text-decoration:none;border-radius:10px;font-weight:700}
+details{margin-top:18px;color:var(--mut);font-size:14px}
+details summary{cursor:pointer;color:var(--dim)}
+details .linha{margin-top:12px}
+.status{font-family:var(--mono);font-size:13px;margin-top:10px}
+.status.on{color:var(--cy)}.status.off{color:var(--err)}
+.hide{display:none}
+footer{margin-top:40px;color:var(--dim);font-size:13px;text-align:center}
+footer a{color:var(--mut)}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <svg width="54" height="54" viewBox="0 0 136 136" aria-hidden="true">
+      <defs><linearGradient id="ac" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#22D3EE"/><stop offset="1" stop-color="#8B5CF6"/></linearGradient></defs>
+      <path d="M68 0 127 34v68L68 136 9 102V34Z" fill="#0B1220" stroke="url(#ac)" stroke-width="6"/>
+      <rect x="50" y="34" width="36" height="64" rx="6" fill="none" stroke="#22D3EE" stroke-width="7"/>
+      <path d="M58 80h20" stroke="#8B5CF6" stroke-width="7" stroke-linecap="round"/>
+    </svg>
+    <div><h1>Cortador <span>9:16</span></h1></div>
+  </header>
+  <p class="sub">Cole o link, escolha a duração e baixe os cortes verticais com legenda.</p>
+  <p class="tags">whisper local · ffmpeg · sem api de terceiros</p>
+
+  <div class="card acc">
+    <label class="t" for="url">Link do YouTube</label>
+    <input type="text" id="url" placeholder="https://www.youtube.com/watch?v=..." autocomplete="off" inputmode="url">
+    <div class="linha">
+      <div><span class="t" style="display:block;font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:var(--mut);margin:0 0 8px;font-weight:600">Duração de cada corte</span>
+        <div class="opcoes" role="radiogroup">
+          <input type="radio" name="dur" id="d60" value="60" checked><label for="d60">60 s</label>
+          <input type="radio" name="dur" id="d90" value="90"><label for="d90">90 s</label>
+        </div></div>
+      <div><label class="t" for="qtd">Quantos cortes</label>
+        <select id="qtd"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option></select></div>
+    </div>
+    <button id="go">Começar</button>
+
+    <details id="cfg">
+      <summary>Servidor de processamento</summary>
+      <div class="linha">
+        <div style="flex:2"><label class="t" for="api">Endereço</label>
+          <input type="text" id="api" placeholder="http://localhost:8765" autocomplete="off"></div>
+        <div><label class="t" for="tok">Token (opcional)</label>
+          <input type="password" id="tok" placeholder="CORTADOR_TOKEN" autocomplete="off"></div>
+      </div>
+      <div class="status" id="st"></div>
+    </details>
+  </div>
+
+  <div class="card hide" id="prog">
+    <div class="barra"><i id="bar"></i></div>
+    <div class="etapa"><span id="etapa">Na fila</span><span id="pct">0%</span></div>
+    <div class="erro hide" id="erro"></div>
+  </div>
+
+  <div class="cortes" id="cortes"></div>
+
+  <footer>Ana Caroline Lamas · <a href="https://github.com/ticarollamas-arch/cortador-916">código no GitHub</a></footer>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+let jid = null, mostrados = new Set();
+
+// Servido pelo próprio app.py -> mesma origem. Na Vercel -> endereço salvo nas configurações.
+const local = !/vercel\.app$/.test(location.hostname) && location.port === '8765';
+const guarda = { get(k){ try{return localStorage.getItem(k)||''}catch{return ''} },
+                 set(k,v){ try{localStorage.setItem(k,v)}catch{} } };
+$('api').value = guarda.get('cortador_api') || (local ? location.origin : 'http://localhost:8765');
+$('tok').value = guarda.get('cortador_tok');
+if (local) $('cfg').classList.add('hide');
+
+const base = () => $('api').value.trim().replace(/\/+$/, '');
+const tok  = () => $('tok').value.trim();
+const qs   = () => tok() ? 't=' + encodeURIComponent(tok()) : '';
+
+async function testar(){
+  $('st').className = 'status'; $('st').textContent = 'verificando...';
+  try {
+    const r = await fetch(base() + '/saude?' + qs());
+    const d = await r.json();
+    if (r.status === 401) {
+      $('st').className = 'status off'; $('st').textContent = '● servidor encontrado, mas o token está errado ou vazio';
+      $('cfg').open = true; return false;
+    }
+    if (!r.ok) throw new Error(d.erro || r.status);
+    $('st').className = 'status on'; $('st').textContent = '● conectado · modelo ' + d.modelo;
+    return true;
+  } catch (e) {
+    $('st').className = 'status off';
+    $('st').textContent = '● sem conexão com ' + base() + ' — o servidor está rodando? (' + e.message + ')';
+    $('cfg').open = true; return false;
+  }
+}
+['api','tok'].forEach(id => $(id).addEventListener('change', () => {
+  guarda.set('cortador_api', base()); guarda.set('cortador_tok', tok()); testar();
+}));
+testar();
+
+$('go').onclick = async () => {
+  const url = $('url').value.trim();
+  if (!url) { $('url').focus(); return; }
+  if (!await testar()) return;
+  $('go').disabled = true; $('go').textContent = 'Processando...';
+  $('prog').classList.remove('hide'); $('erro').classList.add('hide');
+  $('cortes').innerHTML = ''; mostrados.clear();
+  try {
+    const r = await fetch(base() + '/iniciar?' + qs(), { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ url, duracao:+document.querySelector('[name=dur]:checked').value, qtd:+$('qtd').value }) });
+    const d = await r.json();
+    if (d.erro) return falha(d.erro);
+    jid = d.id; acompanhar();
+  } catch (e) { falha(e.message); }
+};
+
+function falha(msg){
+  $('erro').textContent = 'Erro: ' + msg; $('erro').classList.remove('hide');
+  $('go').disabled = false; $('go').textContent = 'Tentar de novo';
+}
+
+async function acompanhar(){
+  let t;
+  try { t = await (await fetch(base() + '/status?id=' + jid + '&' + qs())).json(); }
+  catch { setTimeout(acompanhar, 2000); return; }
+  $('bar').style.width = (t.pct||0) + '%'; $('pct').textContent = Math.round(t.pct||0) + '%';
+  $('etapa').textContent = t.etapa || '';
+  (t.cortes || []).forEach(mostrar);
+  if (t.erro) return falha(t.erro);
+  if (t.fim) { $('go').disabled = false; $('go').textContent = 'Fazer outro'; return; }
+  setTimeout(acompanhar, 1000);
+}
+
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+function mostrar(c){
+  if (mostrados.has(c.arquivo)) return; mostrados.add(c.arquivo);
+  const arq = encodeURIComponent(c.arquivo), q = qs() ? '?' + qs() : '';
+  const el = document.createElement('div'); el.className = 'corte';
+  el.innerHTML = `<video src="${base()}/ver/${jid}/${arq}${q}" controls preload="metadata" playsinline></video>
+    <div class="info"><b>${c.duracao}s · início ${esc(c.inicio)} · nota ${c.nota}</b><br>
+    “${esc(c.texto)}…”<span class="pq">${esc(c.por_que)}</span></div>
+    <a class="dl" href="${base()}/baixar/${jid}/${arq}${q}">⬇ Baixar MP4</a>`;
+  $('cortes').appendChild(el);
+}
+</script>
+</body>
+</html>

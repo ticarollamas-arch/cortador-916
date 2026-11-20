@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+venv/
+.venv/
+servidor/trabalhos/
+cortes/
+*.mp4
+*.wav
+*.ass
+*.palavras.json
+.vercel
+.env
