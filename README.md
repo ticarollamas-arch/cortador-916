@@ -1,5 +1,10 @@
 <p align="center"><img src="assets/banner.svg" alt="Cortador 9:16 — cortes verticais com legenda por IA rodando localmente" width="100%"></p>
 
+<p align="center">
+  <a href="https://cortador-916.vercel.app"><img src="https://img.shields.io/badge/Abrir_o_site-cortador--916.vercel.app-22D3EE?logo=vercel&logoColor=white&labelColor=0B1220" alt="Abrir o site na Vercel"></a>
+  <a href="https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fticarollamas-arch%2Fcortador-916&project-name=cortador-916"><img src="https://vercel.com/button" alt="Deploy with Vercel"></a>
+</p>
+
 # Cortador 9:16 — cortes verticais com legenda por IA local
 
 Ferramenta em **Python** que transforma um vídeo longo do YouTube em **cortes verticais 9:16 de 60 ou 90 segundos**, com **legenda gravada no vídeo**. A transcrição roda na própria máquina com **Whisper** (faster-whisper) e o corte é feito pelo **ffmpeg**: sem API de terceiros, sem chave, sem custo por minuto.
@@ -62,7 +67,7 @@ Coloque um proxy com HTTPS na frente (Caddy ou Nginx): uma página da Vercel (HT
 
 ### Interface na Vercel
 
-1. Importe este repositório em **vercel.com/new**.
+1. Clique em **Deploy with Vercel** no topo deste README (ou importe o repositório em **vercel.com/new**).
 2. Deixe **Framework Preset** em *Other* e os campos de build vazios: a página estática fica na raiz e é publicada sem build.
 3. Abra o site, expanda **Servidor de processamento** e informe o endereço (`http://localhost:8765` ou `https://sua-vps`) e o token, se houver.
 
