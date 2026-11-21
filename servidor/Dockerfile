@@ -5,7 +5,7 @@ WORKDIR /app/servidor
 COPY servidor/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 COPY servidor/ .
-COPY web/ /app/web/
+COPY index.html favicon.svg /app/
 ENV CORTADOR_HOST=0.0.0.0 CORTADOR_SEM_NAVEGADOR=1
 EXPOSE 8765
 CMD ["python", "app.py"]

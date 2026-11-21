@@ -31,7 +31,7 @@ TOKEN = os.environ.get("CORTADOR_TOKEN", "")
 # origens que podem chamar este servidor; "*" libera todas (o token continua valendo)
 ORIGENS = [o.strip() for o in os.environ.get("CORTADOR_ORIGENS", "*").split(",") if o.strip()]
 PASTA = RAIZ / "trabalhos"
-WEB = RAIZ.parent / "web"
+WEB = RAIZ.parent   # index.html e favicon.svg ficam na raiz do repositório
 ESTATICOS = {"/": ("index.html", "text/html; charset=utf-8"),
              "/favicon.svg": ("favicon.svg", "image/svg+xml")}
 DURACOES = {60: (45, 60), 90: (75, 90)}   # escolha -> (mínimo, máximo) em segundos

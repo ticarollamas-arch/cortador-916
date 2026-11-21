@@ -28,7 +28,7 @@ A interface pode rodar localmente ou ficar hospedada na **Vercel**, apontando pa
 ## Arquitetura
 
 ```
-web/            interface estática  ─┐  hospedada na Vercel (ou servida pelo app.py)
+index.html      interface estática  ─┐  hospedada na Vercel (ou servida pelo app.py)
                                      │  fetch + CORS
 servidor/       app.py + cortador.py ┘  roda no seu PC ou VPS: yt-dlp, Whisper, ffmpeg
 ```
@@ -63,7 +63,7 @@ Coloque um proxy com HTTPS na frente (Caddy ou Nginx): uma página da Vercel (HT
 ### Interface na Vercel
 
 1. Importe este repositório em **vercel.com/new**.
-2. Não precisa configurar nada: o `vercel.json` publica a pasta `web/` sem build.
+2. Deixe **Framework Preset** em *Other* e os campos de build vazios: a página estática fica na raiz e é publicada sem build.
 3. Abra o site, expanda **Servidor de processamento** e informe o endereço (`http://localhost:8765` ou `https://sua-vps`) e o token, se houver.
 
 ## Como usar
