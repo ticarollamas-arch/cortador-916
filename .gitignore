@@ -10,3 +10,4 @@ cortes/
 *.palavras.json
 .vercel
 .env
+public/
