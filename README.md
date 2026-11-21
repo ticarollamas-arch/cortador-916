@@ -7,7 +7,7 @@
 
 # Cortador 9:16 — cortes verticais com legenda por IA no navegador
 
-Site estático que transforma um vídeo longo em **cortes verticais 9:16 de 60 ou 90 segundos**, com **legenda gravada no vídeo**. Tudo acontece **no navegador de quem usa**, inclusive no celular: a transcrição roda com **Whisper** via transformers.js (WebGPU ou WebAssembly) e o corte é gravado com canvas + MediaRecorder. Não há servidor nem API paga, e o vídeo não sai do aparelho.
+Site estático que transforma um vídeo longo em **cortes verticais 9:16 de 60 ou 90 segundos**, com **legenda gravada no vídeo**. O corte acontece **no navegador de quem usa**, inclusive no celular, com canvas + MediaRecorder, e o vídeo não sai do aparelho. A transcrição tem dois modos: **OpenAI Whisper** (rápido, via função da Vercel que guarda a chave) ou **Whisper no próprio aparelho** via transformers.js (grátis, mais lento).
 
 Hospedado na **Vercel**: [cortador-916.vercel.app](https://cortador-916.vercel.app).
 
@@ -20,14 +20,15 @@ Hospedado na **Vercel**: [cortador-916.vercel.app](https://cortador-916.vercel.a
 | Etapa | O que faz | Como |
 |---|---|---|
 | Entrada | Vídeo enviado do aparelho (MP4, MOV, WEBM) | `<input type="file">`, sem upload |
-| Transcrição | Texto com tempo aproximado de cada palavra | Whisper (tiny, base ou small) no navegador, modelo em cache |
+| Transcrição | Texto com o tempo de cada palavra | OpenAI `whisper-1` via `api/transcrever.js`, ou Whisper no navegador |
 | Escolha dos trechos | Pontua candidatos que começam e terminam em fim de frase | ritmo da fala, volume, palavras de gancho, perguntas e abertura |
 | Corte | Recorte central 9:16 em 1080×1920 | canvas + `MediaRecorder` (MP4 H.264 no Chrome atual) |
 | Legenda | Blocos curtos em caixa alta com a palavra falada em amarelo | desenhada quadro a quadro no canvas |
 
 - **Explicável:** cada corte mostra a nota e os critérios que o fizeram ser escolhido.
 - **Duração:** opção 60 s gera cortes de 45–60 s; opção 90 s, de 75–90 s.
-- **Privado:** o vídeo nunca é enviado; só o modelo de IA é baixado (uma vez) do Hugging Face.
+- **Privado:** o vídeo nunca é enviado. No modo OpenAI só o áudio (16 kHz, em pedaços de ~2 min) vai para a transcrição.
+- **Chave protegida:** a chave da OpenAI fica numa variável de ambiente da Vercel; o site exige um código de acesso.
 
 ## Como usar
 
@@ -40,7 +41,17 @@ Por que não aceita link do YouTube: o navegador não pode baixar vídeos do You
 
 ## Deploy na Vercel
 
-Clique em **Deploy with Vercel** no topo, ou importe o repositório em **vercel.com/new**. O `vercel.json` já define o build (`build.sh` copia a página para `public/`) e os cabeçalhos `COOP`/`COEP`, que liberam várias threads para a IA.
+1. Clique em **Deploy with Vercel** no topo, ou importe o repositório em **vercel.com/new**. O `vercel.json` já define o build (`build.sh` copia a página para `public/`) e os cabeçalhos `COOP`/`COEP`.
+2. Em **Settings → Environment Variables**, crie:
+
+| Variável | Valor |
+|---|---|
+| `OPENAI_API_KEY` | chave criada em platform.openai.com/api-keys |
+| `CODIGO_ACESSO` | um código que você inventa; digite o mesmo no site |
+
+3. Faça **Redeploy** para as variáveis valerem. Confira em `/api/transcrever`: deve responder `{"ok":true}`.
+
+Custo do modo OpenAI: cerca de US$ 0,006 por minuto de áudio (um vídeo de 20 min ≈ US$ 0,12).
 
 ## Modo servidor (opcional, aceita link do YouTube)
 
@@ -54,7 +65,7 @@ python cortador.py "https://youtu.be/XXXX" --auto 3 --max 60
 
 ## Limitações
 
-- O tempo de cada palavra é estimado dentro de cada frase do Whisper, então o destaque pode adiantar ou atrasar um pouco.
+- No modo no aparelho, o tempo de cada palavra é estimado dentro de cada frase, então o destaque pode adiantar ou atrasar um pouco (no modo OpenAI o tempo é por palavra).
 - A gravação é em tempo real: um corte de 60 s leva 60 s, com a tela ligada.
 - Vídeos muito longos (mais de ~20 min) podem esgotar a memória do celular ao ler o áudio.
 - Em CPU, a transcrição pode levar mais que a duração do vídeo; com WebGPU é bem mais rápida.
@@ -63,7 +74,7 @@ python cortador.py "https://youtu.be/XXXX" --auto 3 --max 60
 
 ## Tecnologias
 
-JavaScript (sem framework) · transformers.js · Whisper (ONNX) · WebGPU/WebAssembly · Canvas · MediaRecorder · Vercel · Python (modo servidor)
+JavaScript (sem framework) · Vercel Functions · OpenAI Whisper API · transformers.js · Whisper (ONNX) · WebGPU/WebAssembly · Canvas · MediaRecorder · Vercel · Python (modo servidor)
 
 ## Licença
 

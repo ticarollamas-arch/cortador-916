@@ -42,6 +42,9 @@ h1 span{background:var(--grad);-webkit-background-clip:text;background-clip:text
 .opcoes label{flex:1;text-align:center;padding:12px 0;border:1px solid var(--line);border-radius:10px;cursor:pointer;font-size:17px;font-weight:700;background:var(--bg1);transition:.15s}
 .opcoes input:checked+label{background:var(--grad);color:var(--bg1);border-color:transparent}
 .opcoes input:focus-visible+label{outline:2px solid var(--cy)}
+input[type=password]{width:100%;padding:12px 14px;border-radius:10px;border:1px solid var(--line);background:var(--bg1);color:var(--txt);font-size:16px;font-family:inherit}
+input:focus,select:focus{outline:2px solid var(--cy);border-color:transparent}
+#previa{display:block;width:150px;aspect-ratio:9/16;margin:14px auto 0;border-radius:10px;background:#000;border:1px solid var(--line)}
 select{width:100%;padding:12px 14px;border-radius:10px;border:1px solid var(--line);background:var(--bg1);color:var(--txt);font-size:16px;font-family:inherit}
 button{border:0;border-radius:12px;font-weight:700;cursor:pointer;font-size:17px;font-family:inherit}
 #go{width:100%;margin-top:22px;padding:16px;background:var(--grad);color:var(--bg1)}
@@ -60,7 +63,8 @@ button{border:0;border-radius:12px;font-weight:700;cursor:pointer;font-size:17px
 .corte .pq{display:block;margin-top:6px;font-family:var(--mono);font-size:11px;color:var(--dim)}
 .dl{display:block;margin:0 12px 12px;padding:12px;background:var(--grad);color:var(--bg1);text-align:center;text-decoration:none;border-radius:10px;font-weight:700}
 .hide{display:none}
-#palco{position:fixed;left:-9999px;top:0;width:2px;height:2px;overflow:hidden}
+#palco{position:fixed;right:0;bottom:0;width:64px;height:36px;opacity:.01;pointer-events:none;overflow:hidden}
+#palco video{width:64px;height:36px}
 footer{margin-top:40px;color:var(--dim);font-size:13px;text-align:center}
 footer a{color:var(--mut)}
 </style>
@@ -77,7 +81,7 @@ footer a{color:var(--mut)}
     <h1>Cortador <span>9:16</span></h1>
   </header>
   <p class="sub">Envie o vídeo, escolha a duração e baixe os cortes verticais com legenda.</p>
-  <p class="tags">ia no seu navegador · nada sai do aparelho · sem servidor</p>
+  <p class="tags">whisper · corte no navegador · o vídeo não sai do aparelho</p>
 
   <div class="card acc">
     <span class="t">Vídeo</span>
@@ -95,21 +99,31 @@ footer a{color:var(--mut)}
         </div></div>
       <div><label class="t" for="qtd">Quantos cortes</label>
         <select id="qtd"><option>1</option><option selected>2</option><option>3</option><option>4</option><option>5</option></select></div>
-      <div><label class="t" for="mod">Qualidade da IA</label>
+    </div>
+    <div class="linha">
+      <div><label class="t" for="motor">Transcrição</label>
+        <select id="motor">
+          <option value="openai" selected>OpenAI (rápida)</option>
+          <option value="local">No aparelho (grátis, lenta)</option>
+        </select></div>
+      <div id="campoCodigo"><label class="t" for="codigo">Código de acesso</label>
+        <input type="password" id="codigo" placeholder="CODIGO_ACESSO" autocomplete="current-password"></div>
+      <div id="campoModelo" class="hide"><label class="t" for="mod">Qualidade da IA</label>
         <select id="mod">
-          <option value="onnx-community/whisper-tiny">Rápida</option>
-          <option value="onnx-community/whisper-base" selected>Equilibrada</option>
+          <option value="onnx-community/whisper-tiny" selected>Rápida</option>
+          <option value="onnx-community/whisper-base">Equilibrada</option>
           <option value="onnx-community/whisper-small">Melhor (lenta)</option>
         </select></div>
     </div>
     <button id="go">Começar</button>
-    <p class="nota">Na primeira vez o modelo de IA é baixado (40–250 MB) e fica guardado no navegador. Mantenha esta tela aberta durante a gravação dos cortes.</p>
+    <p class="nota" id="notaMotor">O áudio é enviado à OpenAI só para transcrever; o vídeo não sai do aparelho. Mantenha esta tela aberta durante a gravação dos cortes.</p>
   </div>
 
   <div class="card hide" id="prog">
     <div class="barra"><i id="bar"></i></div>
     <div class="etapa"><span id="etapa">Preparando</span><span id="pct">0%</span></div>
     <div class="aviso hide" id="aviso"></div>
+    <canvas id="previa" class="hide" width="270" height="480"></canvas>
     <div class="erro hide" id="erro"></div>
   </div>
 
@@ -130,6 +144,21 @@ const GANCHOS = ['segredo','ninguém','nunca','sempre','verdade','dinheiro','err
   'mentira','descobri','aprendi','mudou','por que','como','você','atenção'];
 
 let arquivo = null, urlArq = null, ocupado = false;
+const guarda = { get(k){ try{ return localStorage.getItem(k) || '' }catch{ return '' } },
+                 set(k,v){ try{ localStorage.setItem(k, v) }catch{} } };
+$('codigo').value = guarda.get('cortador_codigo');
+$('motor').value = guarda.get('cortador_motor') || 'openai';
+function atualizarMotor(){
+  const openai = $('motor').value === 'openai';
+  $('campoCodigo').classList.toggle('hide', !openai);
+  $('campoModelo').classList.toggle('hide', openai);
+  $('notaMotor').textContent = openai
+    ? 'O áudio é enviado à OpenAI só para transcrever; o vídeo não sai do aparelho. Mantenha esta tela aberta durante a gravação dos cortes.'
+    : 'Na primeira vez o modelo de IA é baixado (40–250 MB) e fica guardado no navegador. Em celular pode demorar bastante. Mantenha esta tela aberta.';
+  guarda.set('cortador_motor', $('motor').value);
+}
+$('motor').onchange = atualizarMotor; atualizarMotor();
+$('codigo').onchange = () => guarda.set('cortador_codigo', $('codigo').value.trim());
 const vid = $('vid');
 
 // ------------------------------------------------------------ interface
@@ -221,8 +250,55 @@ function palavrasDoTrecho(texto, ini, fim){
   return ws.map(w => { const d = dur * (w.length + 1) / total; const p = { w, s: t, e: t + d * 0.92 }; t += d; return p; });
 }
 
+// WAV 16 kHz mono 16 bits (formato aceito pela OpenAI)
+function wav(amostras){
+  const buf = new ArrayBuffer(44 + amostras.length * 2), v = new DataView(buf);
+  const str = (o, t) => { for (let i = 0; i < t.length; i++) v.setUint8(o + i, t.charCodeAt(i)); };
+  str(0, 'RIFF'); v.setUint32(4, 36 + amostras.length * 2, true); str(8, 'WAVE'); str(12, 'fmt ');
+  v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+  v.setUint32(24, 16000, true); v.setUint32(28, 32000, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true);
+  str(36, 'data'); v.setUint32(40, amostras.length * 2, true);
+  for (let i = 0; i < amostras.length; i++){ const x = Math.max(-1, Math.min(1, amostras[i])); v.setInt16(44 + i*2, x < 0 ? x * 0x8000 : x * 0x7FFF, true); }
+  return new Blob([buf], { type: 'audio/wav' });
+}
+
+async function transcreverOpenAI(audio){
+  const codigo = $('codigo').value.trim();
+  if (!codigo) throw new Error('Digite o código de acesso (o mesmo de CODIGO_ACESSO na Vercel).');
+  guarda.set('cortador_codigo', codigo);
+  const PEDACO = 110 * 16000;                       // ~3,5 MB por pedido (limite da Vercel: 4,5 MB)
+  const n = Math.ceil(audio.length / PEDACO), resultados = new Array(n);
+  let feitos = 0, proximo = 0;
+  progresso(`Transcrevendo com OpenAI (0 de ${n})`, 20);
+  async function enviar(i, tentativa = 1){
+    const pedaco = audio.subarray(i * PEDACO, Math.min((i + 1) * PEDACO, audio.length));
+    if (pedaco.length < 8000) return [];
+    let r, d;
+    try {
+      r = await fetch('/api/transcrever', { method: 'POST', headers: { 'Content-Type': 'audio/wav', 'x-codigo': codigo, 'x-idioma': 'pt' }, body: wav(pedaco) });
+      d = await r.json();
+    } catch { d = { erro: 'Falha de conexão.' }; r = { ok: false, status: 0 }; }
+    if (!r.ok){
+      if (r.status === 401 || r.status === 500 || tentativa >= 3) throw new Error(d.erro || ('Erro ' + r.status));
+      await new Promise(res => setTimeout(res, 1500 * tentativa));
+      return enviar(i, tentativa + 1);
+    }
+    return d.palavras.map(p => ({ w: p.w, s: p.s + i * 110, e: p.e + i * 110 }));
+  }
+  async function trabalhador(){
+    while (proximo < n){
+      const i = proximo++;
+      resultados[i] = await enviar(i);
+      feitos++; progresso(`Transcrevendo com OpenAI (${feitos} de ${n})`, 20 + 55 * feitos / n);
+    }
+  }
+  await Promise.all([trabalhador(), trabalhador(), trabalhador()]);   // 3 pedidos ao mesmo tempo
+  return resultados.flat();
+}
+
 async function transcrever(audio, nomeModelo){
   if (window.CORTADOR_TESTE_PALAVRAS) return window.CORTADOR_TESTE_PALAVRAS;   // usado só nos testes
+  if ($('motor').value === 'openai') return transcreverOpenAI(audio);
   const modelo = await carregarModelo(nomeModelo);
   const JANELA = 30 * 16000, n = Math.ceil(audio.length / JANELA), palavras = [];
   for (let i = 0; i < n; i++){
@@ -332,11 +408,27 @@ function prepararAudio(){                 // chamado dentro do clique (exigênci
 }
 
 const esperar = (el, ev) => new Promise(r => el.addEventListener(ev, r, { once: true }));
+// espera um evento com prazo; se não vier, segue em frente em vez de travar
+const esperarAte = (el, ev, ms) => new Promise(r => { const t = setTimeout(r, ms); el.addEventListener(ev, () => { clearTimeout(t); r(); }, { once: true }); });
+
+async function garantirVideoPronto(){
+  if (vid.readyState >= 2) return;
+  if (vid.readyState === 0) vid.load();
+  await esperarAte(vid, 'loadeddata', 15000);
+  if (vid.readyState < 1) throw new Error('O navegador não conseguiu abrir o vídeo para gravar. Tente um MP4.');
+}
+
+async function posicionar(t){
+  if (Math.abs(vid.currentTime - t) < 0.05) return;
+  vid.currentTime = t;
+  await esperarAte(vid, 'seeked', 8000);
+}
 
 async function gravarCorte(corte, palavras, n, total){
   const canvas = document.createElement('canvas'); canvas.width = LARG; canvas.height = ALT;
   const ctx = canvas.getContext('2d', { alpha: false });
   const blocos = blocosLegenda(palavras, corte.ini, corte.fim);
+  let pctx;
   const desenhar = () => {
     const vw = vid.videoWidth, vh = vid.videoHeight;
     ctx.fillStyle = '#000'; ctx.fillRect(0, 0, LARG, ALT);
@@ -345,9 +437,11 @@ async function gravarCorte(corte, palavras, n, total){
       ctx.drawImage(vid, (LARG - w) / 2, (ALT - h) / 2, w, h);
     }
     desenharLegenda(ctx, blocos, vid.currentTime);
+    if (pctx) pctx.drawImage(canvas, 0, 0, 270, 480);
   };
 
-  vid.pause(); vid.currentTime = corte.ini; await esperar(vid, 'seeked'); desenhar();
+  vid.pause(); await garantirVideoPronto(); await posicionar(corte.ini); desenhar();
+  const previa = $('previa'); pctx = previa.getContext('2d'); previa.classList.remove('hide');
   const stream = canvas.captureStream(30);
   audioDest.stream.getAudioTracks().forEach(t => stream.addTrack(t));
   const rec = new MediaRecorder(stream, { mimeType: formato || undefined, videoBitsPerSecond: 8_000_000, audioBitsPerSecond: 160_000 });
@@ -355,7 +449,9 @@ async function gravarCorte(corte, palavras, n, total){
   const fim = new Promise(r => rec.onstop = r);
 
   rec.start(1000);
-  await vid.play();
+  try { await vid.play(); }
+  catch { rec.stop(); throw new Error('O navegador bloqueou a reprodução. Toque em Começar de novo.'); }
+  progresso(`Gravando corte ${n} de ${total} (tempo real)`, 78 + 22 * (n - 1) / total);
   await new Promise(resolve => {
     const passo = () => {
       desenhar();
@@ -417,7 +513,7 @@ $('go').onclick = async () => {
       const blob = await gravarCorte(cortes[i], palavras, i + 1, cortes.length);
       mostrarCorte(blob, cortes[i], i + 1, base);
     }
-    progresso('Pronto!', 100);
+    progresso('Pronto!', 100); $('previa').classList.add('hide');
     if (!formato.includes('mp4')) aviso('Seu navegador gravou em WEBM (o Chrome atualizado grava em MP4).');
     $('go').disabled = false; $('go').textContent = 'Fazer outro'; ocupado = false;
   } catch (e) {
