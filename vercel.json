@@ -31,5 +31,10 @@
         }
       ]
     }
-  ]
+  ],
+  "functions": {
+    "api/transcrever.js": {
+      "maxDuration": 60
+    }
+  }
 }
