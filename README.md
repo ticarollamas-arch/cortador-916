@@ -23,6 +23,7 @@ Hospedado na **Vercel**: [cortador-916.vercel.app](https://cortador-916.vercel.a
 | Transcrição | Texto com o tempo de cada palavra | OpenAI `whisper-1` via `api/transcrever.js`, ou Whisper no navegador |
 | Escolha dos trechos | Pontua candidatos que começam e terminam em fim de frase | ritmo da fala, volume, palavras de gancho, perguntas e abertura |
 | Corte | Recorte central 9:16 em 1080×1920 | canvas + `MediaRecorder` (MP4 H.264 no Chrome atual) |
+| Finalização | MP4 comum, com a duração certa no cabeçalho | `mp4fix.js` junta os pedaços do MP4 fragmentado, sem recodificar |
 | Legenda | Blocos curtos em caixa alta com a palavra falada em amarelo | desenhada quadro a quadro no canvas |
 
 - **Explicável:** cada corte mostra a nota e os critérios que o fizeram ser escolhido.

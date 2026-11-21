@@ -13,5 +13,5 @@ fi
 echo "pagina em: $D"
 rm -rf public
 mkdir -p public
-cp "$D/index.html" "$D/favicon.svg" public/
+cp "$D/index.html" "$D/favicon.svg" "$D/mp4fix.js" public/
 echo "ok: public/ pronto"

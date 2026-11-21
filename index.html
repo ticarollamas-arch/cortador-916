@@ -135,6 +135,7 @@ footer a{color:var(--mut)}
 </main>
 
 <script type="module">
+import { desfragmentarMP4 } from './mp4fix.js';
 const $ = id => document.getElementById(id);
 const TRANSFORMERS = 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.5.1';
 const DURACOES = { 60: [45, 60], 90: [75, 90] };       // escolha -> [mínimo, máximo] em segundos
@@ -453,18 +454,39 @@ async function gravarCorte(corte, palavras, n, total){
   catch { rec.stop(); throw new Error('O navegador bloqueou a reprodução. Toque em Começar de novo.'); }
   progresso(`Gravando corte ${n} de ${total} (tempo real)`, 78 + 22 * (n - 1) / total);
   await new Promise(resolve => {
+    let parado = 0, ultimo = vid.currentTime, acabou = false;
+    const terminar = () => { if (!acabou){ acabou = true; clearInterval(vigia); resolve(); } };
     const passo = () => {
+      if (acabou) return;
       desenhar();
       const feito = (vid.currentTime - corte.ini) / (corte.fim - corte.ini);
       progresso(`Gravando corte ${n} de ${total} (tempo real)`, 78 + 22 * ((n - 1) + Math.min(feito, 1)) / total);
-      if (vid.currentTime >= corte.fim || vid.ended) return resolve();
-      (vid.requestVideoFrameCallback ? vid.requestVideoFrameCallback.bind(vid) : requestAnimationFrame)(passo);
+      if (vid.currentTime >= corte.fim || vid.ended) return terminar();
+      requestAnimationFrame(passo);
     };
+    // vigia: se o celular pausar o vídeo no meio, retoma; se travar de vez, encerra com o que gravou
+    const vigia = setInterval(() => {
+      if (acabou) return;
+      if (vid.currentTime >= corte.fim || vid.ended) return terminar();
+      if (vid.paused) vid.play().catch(() => {});
+      parado = Math.abs(vid.currentTime - ultimo) < 0.01 ? parado + 1 : 0;
+      ultimo = vid.currentTime;
+      if (parado >= 20) terminar();          // 10 s sem avançar
+    }, 500);
     passo();
   });
   vid.pause(); rec.stop(); await fim;
   stream.getVideoTracks().forEach(t => t.stop());
-  return new Blob(partes, { type: (formato || 'video/webm').split(';')[0] });
+  const tipoArq = (formato || 'video/webm').split(';')[0];
+  let blob = new Blob(partes, { type: tipoArq });
+  if (tipoArq === 'video/mp4'){
+    // o MP4 do navegador vem em pedaços com duração 0 no cabeçalho: galeria/WhatsApp
+    // mostram só os primeiros segundos. Reorganiza num MP4 comum com a duração certa.
+    progresso(`Finalizando corte ${n} de ${total}`, null);
+    try { blob = new Blob([desfragmentarMP4(new Uint8Array(await blob.arrayBuffer()))], { type: 'video/mp4' }); }
+    catch (e) { console.warn('mp4fix falhou, mantendo o arquivo original', e); }
+  }
+  return blob;
 }
 
 function mostrarCorte(blob, corte, n, base){
