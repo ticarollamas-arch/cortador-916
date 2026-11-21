@@ -3,17 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Cortador 9:16 — cortes verticais com legenda por IA local</title>
-<meta name="description" content="Cole um link do YouTube, escolha 60 ou 90 segundos e baixe cortes verticais 9:16 com legenda gerada por IA rodando no seu próprio servidor.">
+<title>Cortador 9:16 — cortes verticais com legenda por IA no navegador</title>
+<meta name="description" content="Envie um vídeo, escolha 60 ou 90 segundos e baixe cortes verticais 9:16 com legenda gerada por IA rodando no seu próprio navegador.">
 <meta name="theme-color" content="#0B1220">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <style>
 :root{
-  --bg1:#0B1220;--bg2:#111C33;--grid:#1E293B;--card:#0F172A;--line:#1E293B;
+  --bg1:#0B1220;--bg2:#111C33;--grid:#1E293B;--line:#1E293B;
   --txt:#E6EDF7;--mut:#94A3B8;--dim:#64748B;
   --cy:#22D3EE;--vi:#8B5CF6;--grad:linear-gradient(90deg,#22D3EE,#8B5CF6);
-  --ok:#22D3EE;--err:#F87171;
-  --mono:"JetBrains Mono",Consolas,monospace;
+  --err:#F87171;--mono:"JetBrains Mono",Consolas,monospace;
 }
 *{box-sizing:border-box}
 html{background:var(--bg1)}
@@ -21,47 +20,47 @@ body{margin:0;min-height:100vh;color:var(--txt);font:16px/1.55 "Segoe UI",Inter,
   background:
     linear-gradient(var(--grid) 1px,transparent 1px) 0 0/32px 32px,
     linear-gradient(90deg,var(--grid) 1px,transparent 1px) 0 0/32px 32px,
-    linear-gradient(135deg,var(--bg1),var(--bg2));
-  background-blend-mode:normal;}
+    linear-gradient(135deg,var(--bg1),var(--bg2));}
 body::before{content:"";position:fixed;inset:0;background:linear-gradient(135deg,rgba(11,18,32,.55),rgba(17,28,51,.7));pointer-events:none;z-index:-1}
-main{max-width:800px;margin:0 auto;padding:48px 20px 80px;position:relative}
-header{display:flex;align-items:center;gap:18px;margin-bottom:8px}
-header svg{flex:none}
-h1{margin:0;font-size:34px;letter-spacing:-.5px;font-weight:700}
+main{max-width:800px;margin:0 auto;padding:40px 18px 80px}
+header{display:flex;align-items:center;gap:16px;margin-bottom:6px}
+h1{margin:0;font-size:32px;letter-spacing:-.5px;font-weight:700}
 h1 span{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
 .sub{color:var(--mut);margin:6px 0 4px}
-.tags{font-family:var(--mono);color:var(--cy);font-size:13px;margin:0 0 30px}
-.card{background:rgba(15,23,42,.88);border:1px solid var(--line);border-radius:16px;padding:24px;margin-bottom:20px;position:relative;overflow:hidden}
+.tags{font-family:var(--mono);color:var(--cy);font-size:13px;margin:0 0 26px}
+.card{background:rgba(15,23,42,.9);border:1px solid var(--line);border-radius:16px;padding:22px;margin-bottom:20px;position:relative;overflow:hidden}
 .card.acc::after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;background:var(--grad)}
-label.t{display:block;font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:var(--mut);margin:0 0 8px;font-weight:600}
-input[type=text],input[type=password],select{width:100%;padding:14px 16px;border-radius:10px;border:1px solid var(--line);background:var(--bg1);color:var(--txt);font-size:16px;font-family:inherit}
-input:focus,select:focus{outline:2px solid var(--cy);border-color:transparent}
-.linha{display:flex;gap:20px;flex-wrap:wrap;margin-top:20px}.linha>div{flex:1;min-width:200px}
+.t{display:block;font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:var(--mut);margin:0 0 8px;font-weight:600}
+.arquivo{display:flex;align-items:center;gap:14px;padding:18px;border:1.5px dashed #334155;border-radius:12px;background:var(--bg1);cursor:pointer;transition:.15s}
+.arquivo:hover,.arquivo.sobre{border-color:var(--cy)}
+.arquivo input{position:absolute;opacity:0;pointer-events:none}
+.arquivo b{display:block}
+.arquivo small{color:var(--dim)}
+.ic{width:44px;height:44px;flex:none;border-radius:10px;background:var(--grad);display:grid;place-items:center;color:var(--bg1);font-size:22px;font-weight:800}
+.linha{display:flex;gap:16px;flex-wrap:wrap;margin-top:18px}.linha>div{flex:1;min-width:150px}
 .opcoes{display:flex;gap:10px}.opcoes input{position:absolute;opacity:0;pointer-events:none}
-.opcoes label{flex:1;text-align:center;padding:13px 0;border:1px solid var(--line);border-radius:10px;cursor:pointer;font-size:18px;font-weight:700;background:var(--bg1);transition:.15s}
-.opcoes label:hover{border-color:var(--dim)}
+.opcoes label{flex:1;text-align:center;padding:12px 0;border:1px solid var(--line);border-radius:10px;cursor:pointer;font-size:17px;font-weight:700;background:var(--bg1);transition:.15s}
 .opcoes input:checked+label{background:var(--grad);color:var(--bg1);border-color:transparent}
 .opcoes input:focus-visible+label{outline:2px solid var(--cy)}
+select{width:100%;padding:12px 14px;border-radius:10px;border:1px solid var(--line);background:var(--bg1);color:var(--txt);font-size:16px;font-family:inherit}
 button{border:0;border-radius:12px;font-weight:700;cursor:pointer;font-size:17px;font-family:inherit}
-#go{width:100%;margin-top:24px;padding:16px;background:var(--grad);color:var(--bg1)}
+#go{width:100%;margin-top:22px;padding:16px;background:var(--grad);color:var(--bg1)}
 #go:disabled{opacity:.45;cursor:wait}
+.nota{color:var(--dim);font-size:13px;margin:12px 0 0}
 .barra{height:12px;background:var(--bg1);border-radius:99px;overflow:hidden;border:1px solid var(--line)}
 .barra i{display:block;height:100%;width:0;background:var(--grad);transition:width .4s}
-.etapa{display:flex;justify-content:space-between;margin-top:10px;color:var(--mut);font-family:var(--mono);font-size:14px}
+.etapa{display:flex;justify-content:space-between;gap:10px;margin-top:10px;color:var(--mut);font-family:var(--mono);font-size:14px}
+.aviso{margin-top:10px;color:var(--cy);font-size:13px}
 .erro{color:var(--err);margin-top:12px;font-weight:600}
 .cortes{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
-.corte{background:rgba(15,23,42,.92);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
+.corte{background:rgba(15,23,42,.94);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
 .corte video{width:100%;aspect-ratio:9/16;background:#000;display:block}
 .corte .info{padding:12px;font-size:13px;color:var(--mut);flex:1}
 .corte .info b{color:var(--txt);font-family:var(--mono);font-weight:500}
 .corte .pq{display:block;margin-top:6px;font-family:var(--mono);font-size:11px;color:var(--dim)}
 .dl{display:block;margin:0 12px 12px;padding:12px;background:var(--grad);color:var(--bg1);text-align:center;text-decoration:none;border-radius:10px;font-weight:700}
-details{margin-top:18px;color:var(--mut);font-size:14px}
-details summary{cursor:pointer;color:var(--dim)}
-details .linha{margin-top:12px}
-.status{font-family:var(--mono);font-size:13px;margin-top:10px}
-.status.on{color:var(--cy)}.status.off{color:var(--err)}
 .hide{display:none}
+#palco{position:fixed;left:-9999px;top:0;width:2px;height:2px;overflow:hidden}
 footer{margin-top:40px;color:var(--dim);font-size:13px;text-align:center}
 footer a{color:var(--mut)}
 </style>
@@ -69,138 +68,365 @@ footer a{color:var(--mut)}
 <body>
 <main>
   <header>
-    <svg width="54" height="54" viewBox="0 0 136 136" aria-hidden="true">
+    <svg width="50" height="50" viewBox="0 0 136 136" aria-hidden="true">
       <defs><linearGradient id="ac" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#22D3EE"/><stop offset="1" stop-color="#8B5CF6"/></linearGradient></defs>
       <path d="M68 0 127 34v68L68 136 9 102V34Z" fill="#0B1220" stroke="url(#ac)" stroke-width="6"/>
       <rect x="50" y="34" width="36" height="64" rx="6" fill="none" stroke="#22D3EE" stroke-width="7"/>
       <path d="M58 80h20" stroke="#8B5CF6" stroke-width="7" stroke-linecap="round"/>
     </svg>
-    <div><h1>Cortador <span>9:16</span></h1></div>
+    <h1>Cortador <span>9:16</span></h1>
   </header>
-  <p class="sub">Cole o link, escolha a duração e baixe os cortes verticais com legenda.</p>
-  <p class="tags">whisper local · ffmpeg · sem api de terceiros</p>
+  <p class="sub">Envie o vídeo, escolha a duração e baixe os cortes verticais com legenda.</p>
+  <p class="tags">ia no seu navegador · nada sai do aparelho · sem servidor</p>
 
   <div class="card acc">
-    <label class="t" for="url">Link do YouTube</label>
-    <input type="text" id="url" placeholder="https://www.youtube.com/watch?v=..." autocomplete="off" inputmode="url">
+    <span class="t">Vídeo</span>
+    <label class="arquivo" id="zona">
+      <input type="file" id="arq" accept="video/*">
+      <span class="ic">↑</span>
+      <span><b id="nomeArq">Escolher vídeo do aparelho</b><small id="infoArq">MP4, MOV ou WEBM · ideal até 20 min</small></span>
+    </label>
+
     <div class="linha">
-      <div><span class="t" style="display:block;font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:var(--mut);margin:0 0 8px;font-weight:600">Duração de cada corte</span>
+      <div><span class="t">Duração de cada corte</span>
         <div class="opcoes" role="radiogroup">
           <input type="radio" name="dur" id="d60" value="60" checked><label for="d60">60 s</label>
           <input type="radio" name="dur" id="d90" value="90"><label for="d90">90 s</label>
         </div></div>
       <div><label class="t" for="qtd">Quantos cortes</label>
-        <select id="qtd"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option></select></div>
+        <select id="qtd"><option>1</option><option selected>2</option><option>3</option><option>4</option><option>5</option></select></div>
+      <div><label class="t" for="mod">Qualidade da IA</label>
+        <select id="mod">
+          <option value="onnx-community/whisper-tiny">Rápida</option>
+          <option value="onnx-community/whisper-base" selected>Equilibrada</option>
+          <option value="onnx-community/whisper-small">Melhor (lenta)</option>
+        </select></div>
     </div>
     <button id="go">Começar</button>
-
-    <details id="cfg">
-      <summary>Servidor de processamento</summary>
-      <div class="linha">
-        <div style="flex:2"><label class="t" for="api">Endereço</label>
-          <input type="text" id="api" placeholder="http://localhost:8765" autocomplete="off"></div>
-        <div><label class="t" for="tok">Token (opcional)</label>
-          <input type="password" id="tok" placeholder="CORTADOR_TOKEN" autocomplete="off"></div>
-      </div>
-      <div class="status" id="st"></div>
-    </details>
+    <p class="nota">Na primeira vez o modelo de IA é baixado (40–250 MB) e fica guardado no navegador. Mantenha esta tela aberta durante a gravação dos cortes.</p>
   </div>
 
   <div class="card hide" id="prog">
     <div class="barra"><i id="bar"></i></div>
-    <div class="etapa"><span id="etapa">Na fila</span><span id="pct">0%</span></div>
+    <div class="etapa"><span id="etapa">Preparando</span><span id="pct">0%</span></div>
+    <div class="aviso hide" id="aviso"></div>
     <div class="erro hide" id="erro"></div>
   </div>
 
   <div class="cortes" id="cortes"></div>
 
+  <div id="palco"><video id="vid" playsinline preload="auto"></video></div>
+
   <footer>Ana Caroline Lamas · <a href="https://github.com/ticarollamas-arch/cortador-916">código no GitHub</a></footer>
 </main>
 
-<script>
+<script type="module">
 const $ = id => document.getElementById(id);
-let jid = null, mostrados = new Set();
+const TRANSFORMERS = 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.5.1';
+const DURACOES = { 60: [45, 60], 90: [75, 90] };       // escolha -> [mínimo, máximo] em segundos
+const LARG = 1080, ALT = 1920;
+const GANCHOS = ['segredo','ninguém','nunca','sempre','verdade','dinheiro','erro','cuidado','olha',
+  'incrível','absurdo','pior','melhor','primeiro','importante','problema','simples','rápido','grátis',
+  'mentira','descobri','aprendi','mudou','por que','como','você','atenção'];
 
-// Servido pelo próprio app.py -> mesma origem. Na Vercel -> endereço salvo nas configurações.
-const local = !/vercel\.app$/.test(location.hostname) && location.port === '8765';
-const guarda = { get(k){ try{return localStorage.getItem(k)||''}catch{return ''} },
-                 set(k,v){ try{localStorage.setItem(k,v)}catch{} } };
-$('api').value = guarda.get('cortador_api') || (local ? location.origin : 'http://localhost:8765');
-$('tok').value = guarda.get('cortador_tok');
-if (local) $('cfg').classList.add('hide');
+let arquivo = null, urlArq = null, ocupado = false;
+const vid = $('vid');
 
-const base = () => $('api').value.trim().replace(/\/+$/, '');
-const tok  = () => $('tok').value.trim();
-const qs   = () => tok() ? 't=' + encodeURIComponent(tok()) : '';
-
-async function testar(){
-  $('st').className = 'status'; $('st').textContent = 'verificando...';
-  try {
-    const r = await fetch(base() + '/saude?' + qs());
-    const d = await r.json();
-    if (r.status === 401) {
-      $('st').className = 'status off'; $('st').textContent = '● servidor encontrado, mas o token está errado ou vazio';
-      $('cfg').open = true; return false;
-    }
-    if (!r.ok) throw new Error(d.erro || r.status);
-    $('st').className = 'status on'; $('st').textContent = '● conectado · modelo ' + d.modelo;
-    return true;
-  } catch (e) {
-    $('st').className = 'status off';
-    $('st').textContent = '● sem conexão com ' + base() + ' — o servidor está rodando? (' + e.message + ')';
-    $('cfg').open = true; return false;
-  }
+// ------------------------------------------------------------ interface
+function progresso(etapa, pct){
+  if (etapa) $('etapa').textContent = etapa;
+  if (pct != null){ $('bar').style.width = pct + '%'; $('pct').textContent = Math.round(pct) + '%'; }
 }
-['api','tok'].forEach(id => $(id).addEventListener('change', () => {
-  guarda.set('cortador_api', base()); guarda.set('cortador_tok', tok()); testar();
-}));
-testar();
-
-$('go').onclick = async () => {
-  const url = $('url').value.trim();
-  if (!url) { $('url').focus(); return; }
-  if (!await testar()) return;
-  $('go').disabled = true; $('go').textContent = 'Processando...';
-  $('prog').classList.remove('hide'); $('erro').classList.add('hide');
-  $('cortes').innerHTML = ''; mostrados.clear();
-  try {
-    const r = await fetch(base() + '/iniciar?' + qs(), { method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ url, duracao:+document.querySelector('[name=dur]:checked').value, qtd:+$('qtd').value }) });
-    const d = await r.json();
-    if (d.erro) return falha(d.erro);
-    jid = d.id; acompanhar();
-  } catch (e) { falha(e.message); }
-};
-
+function aviso(t){ $('aviso').textContent = t || ''; $('aviso').classList.toggle('hide', !t); }
 function falha(msg){
   $('erro').textContent = 'Erro: ' + msg; $('erro').classList.remove('hide');
-  $('go').disabled = false; $('go').textContent = 'Tentar de novo';
+  $('go').disabled = false; $('go').textContent = 'Tentar de novo'; ocupado = false; aviso('');
 }
-
-async function acompanhar(){
-  let t;
-  try { t = await (await fetch(base() + '/status?id=' + jid + '&' + qs())).json(); }
-  catch { setTimeout(acompanhar, 2000); return; }
-  $('bar').style.width = (t.pct||0) + '%'; $('pct').textContent = Math.round(t.pct||0) + '%';
-  $('etapa').textContent = t.etapa || '';
-  (t.cortes || []).forEach(mostrar);
-  if (t.erro) return falha(t.erro);
-  if (t.fim) { $('go').disabled = false; $('go').textContent = 'Fazer outro'; return; }
-  setTimeout(acompanhar, 1000);
-}
-
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const hms = s => { s = Math.max(0, s|0); const h = s/3600|0, m = (s%3600)/60|0, x = s%60;
+  return (h ? h + ':' + String(m).padStart(2,'0') : m) + ':' + String(x).padStart(2,'0'); };
 
-function mostrar(c){
-  if (mostrados.has(c.arquivo)) return; mostrados.add(c.arquivo);
-  const arq = encodeURIComponent(c.arquivo), q = qs() ? '?' + qs() : '';
+function escolherArquivo(f){
+  if (!f) return;
+  if (!f.type.startsWith('video/') && !/\.(mp4|mov|webm|mkv|m4v)$/i.test(f.name)) { alert('Escolha um arquivo de vídeo.'); return; }
+  arquivo = f;
+  if (urlArq) URL.revokeObjectURL(urlArq);
+  urlArq = URL.createObjectURL(f);
+  vid.src = urlArq;
+  $('nomeArq').textContent = f.name;
+  $('infoArq').textContent = (f.size/1048576).toFixed(0) + ' MB';
+  vid.onloadedmetadata = () => { $('infoArq').textContent = (f.size/1048576).toFixed(0) + ' MB · ' + hms(vid.duration); };
+}
+$('arq').onchange = e => escolherArquivo(e.target.files[0]);
+const zona = $('zona');
+['dragenter','dragover'].forEach(ev => zona.addEventListener(ev, e => { e.preventDefault(); zona.classList.add('sobre'); }));
+['dragleave','drop'].forEach(ev => zona.addEventListener(ev, e => { e.preventDefault(); zona.classList.remove('sobre'); }));
+zona.addEventListener('drop', e => escolherArquivo(e.dataTransfer.files[0]));
+
+// ------------------------------------------------------------ 1. áudio 16 kHz mono
+async function lerAudio(f){
+  const bruto = await f.arrayBuffer();
+  const ctx = new (window.AudioContext || window.webkitAudioContext)();
+  let buf;
+  try { buf = await ctx.decodeAudioData(bruto); }
+  catch { throw new Error('Não consegui ler o áudio deste vídeo. Tente um MP4.'); }
+  finally { ctx.close(); }
+  const off = new OfflineAudioContext(1, Math.ceil(buf.duration * 16000), 16000);
+  const src = off.createBufferSource(); src.buffer = buf; src.connect(off.destination); src.start();
+  const r = await off.startRendering();
+  return r.getChannelData(0);
+}
+
+function energiaPorSegundo(audio){
+  const n = Math.floor(audio.length / 16000), e = new Float32Array(Math.max(n,1));
+  let max = 0;
+  for (let s = 0; s < n; s++){
+    let soma = 0; for (let i = s*16000, f = i+16000; i < f; i++) soma += audio[i]*audio[i];
+    e[s] = Math.sqrt(soma/16000); if (e[s] > max) max = e[s];
+  }
+  if (max) for (let s = 0; s < n; s++) e[s] /= max;
+  return e;
+}
+
+// ------------------------------------------------------------ 2. transcrição (Whisper no navegador)
+let asr = null, modeloCarregado = null;
+async function carregarModelo(nome){
+  if (asr && modeloCarregado === nome) return asr;
+  const { pipeline, env } = await import(TRANSFORMERS);
+  env.allowLocalModels = false;
+  const webgpu = !!navigator.gpu && await navigator.gpu.requestAdapter().then(a => !!a).catch(() => false);
+  const arquivos = {};
+  asr = await pipeline('automatic-speech-recognition', nome, {
+    device: webgpu ? 'webgpu' : 'wasm',
+    dtype: webgpu ? { encoder_model: 'fp32', decoder_model_merged: 'q4' } : 'q8',
+    progress_callback: p => {
+      if (p.status === 'progress' && p.total){
+        arquivos[p.file] = [p.loaded, p.total];
+        let l = 0, t = 0; for (const [a, b] of Object.values(arquivos)) { l += a; t += b; }
+        progresso('Baixando modelo de IA (só na 1ª vez)', 5 + 15 * l / t);
+      }
+    },
+  });
+  modeloCarregado = nome;
+  aviso(webgpu ? 'IA rodando na placa de vídeo (WebGPU).' : 'IA rodando no processador. Pode demorar.');
+  return asr;
+}
+
+// divide o tempo de cada trecho entre as palavras, proporcional ao tamanho
+function palavrasDoTrecho(texto, ini, fim){
+  const ws = texto.trim().split(/\s+/).filter(Boolean);
+  if (!ws.length) return [];
+  const total = ws.reduce((a, w) => a + w.length + 1, 0), dur = Math.max(fim - ini, 0.2);
+  let t = ini;
+  return ws.map(w => { const d = dur * (w.length + 1) / total; const p = { w, s: t, e: t + d * 0.92 }; t += d; return p; });
+}
+
+async function transcrever(audio, nomeModelo){
+  if (window.CORTADOR_TESTE_PALAVRAS) return window.CORTADOR_TESTE_PALAVRAS;   // usado só nos testes
+  const modelo = await carregarModelo(nomeModelo);
+  const JANELA = 30 * 16000, n = Math.ceil(audio.length / JANELA), palavras = [];
+  for (let i = 0; i < n; i++){
+    progresso(`Transcrevendo ${hms(i*30)} de ${hms(audio.length/16000)}`, 20 + 55 * i / n);
+    const pedaco = audio.subarray(i * JANELA, Math.min((i + 1) * JANELA, audio.length));
+    if (pedaco.length < 8000) continue;
+    const r = await modelo(pedaco, { language: 'portuguese', task: 'transcribe', return_timestamps: true });
+    const desloc = i * 30, durPed = pedaco.length / 16000;
+    for (const c of (r.chunks || [{ text: r.text, timestamp: [0, durPed] }])){
+      const a = c.timestamp?.[0] ?? 0, b = c.timestamp?.[1] ?? durPed;
+      palavras.push(...palavrasDoTrecho(c.text, desloc + a, desloc + Math.min(b, durPed)));
+    }
+  }
+  return palavras;
+}
+
+// ------------------------------------------------------------ 3. melhores trechos (mesma lógica do servidor)
+function frases(pal, pausa = 0.7){
+  const g = []; let at = [];
+  pal.forEach((p, i) => {
+    at.push(p); const prox = pal[i+1];
+    if (/[.!?]$/.test(p.w) || !prox || prox.s - p.e > pausa){ g.push(at); at = []; }
+  });
+  return g;
+}
+function pontuar(tr, energia){
+  const ini = tr[0].s, fim = tr[tr.length-1].e, dur = Math.max(fim - ini, 1);
+  const texto = tr.map(p => p.w).join(' ').toLowerCase();
+  const conta = (t, g) => t.split(g).length - 1;
+  const ritmo = Math.min(tr.length / dur / 3, 1);
+  let vol = 0, k = 0; for (let s = ini|0; s <= (fim|0) && s < energia.length; s++){ vol += energia[s]; k++; } vol = k ? vol/k : 0;
+  const ganchos = Math.min(GANCHOS.reduce((a, g) => a + conta(texto, g), 0) / 4, 1);
+  const emocao = Math.min((conta(texto,'!') + conta(texto,'?')) / 3, 1);
+  const abertura = tr.slice(0, 8).map(p => p.w).join(' ').toLowerCase();
+  const forte = (abertura.includes('?') || GANCHOS.some(g => abertura.includes(g))) ? 1 : 0;
+  const nota = .30*ritmo + .25*vol + .25*ganchos + .10*emocao + .10*forte;
+  return [nota, `ritmo=${ritmo.toFixed(2)} volume=${vol.toFixed(2)} ganchos=${ganchos.toFixed(2)} emoção=${emocao.toFixed(2)} abertura=${forte}`];
+}
+function escolherCortes(pal, energia, qtd, dmin, dmax){
+  const blocos = frases(pal), cand = [];
+  for (let i = 0; i < blocos.length; i++){
+    let tr = [];
+    for (let j = i; j < blocos.length; j++){
+      tr = tr.concat(blocos[j]);
+      const dur = tr[tr.length-1].e - tr[0].s;
+      if (dur > dmax) break;
+      if (dur >= dmin){ const [nota, pq] = pontuar(tr, energia); cand.push({ nota, ini: tr[0].s, fim: tr[tr.length-1].e, pq, tr }); }
+    }
+  }
+  cand.sort((a, b) => b.nota - a.nota);
+  const esc = [];
+  for (const c of cand){
+    if (esc.every(e => c.fim <= e.ini || c.ini >= e.fim)) esc.push(c);
+    if (esc.length === qtd) break;
+  }
+  return esc.sort((a, b) => a.ini - b.ini);
+}
+
+// ------------------------------------------------------------ 4. legenda estilo shorts
+function blocosLegenda(pal, ini, fim, n = 3){
+  const tr = pal.filter(p => p.s >= ini - 0.05 && p.e <= fim + 0.05), bl = []; let at = [];
+  for (const p of tr){
+    if (at.length && (at.length >= n || p.s - at[at.length-1].e > 0.6)){ bl.push(at); at = []; }
+    at.push(p);
+  }
+  if (at.length) bl.push(at);
+  return bl;
+}
+function desenharLegenda(ctx, blocos, t){
+  const b = blocos.find(b => t >= b[0].s && t <= b[b.length-1].e + 0.15);
+  if (!b) return;
+  const palavras = b.map(p => p.w.toUpperCase());
+  let atual = b.findIndex((p, i) => t >= p.s && t < (b[i+1] ? b[i+1].s : p.e + 0.15));
+  let tam = 86;
+  ctx.font = `900 ${tam}px "Arial Black", "Segoe UI", Arial, sans-serif`;
+  const esp = () => ctx.measureText(' ').width;
+  let larg = palavras.reduce((a, w) => a + ctx.measureText(w).width, 0) + esp() * (palavras.length - 1);
+  if (larg > LARG - 120){ tam = Math.floor(tam * (LARG - 120) / larg); ctx.font = `900 ${tam}px "Arial Black", "Segoe UI", Arial, sans-serif`;
+    larg = palavras.reduce((a, w) => a + ctx.measureText(w).width, 0) + esp() * (palavras.length - 1); }
+  let x = (LARG - larg) / 2; const y = ALT - 560;
+  ctx.textBaseline = 'alphabetic'; ctx.lineJoin = 'round';
+  ctx.lineWidth = Math.max(8, tam * 0.14); ctx.strokeStyle = '#000';
+  ctx.shadowColor = 'rgba(0,0,0,.55)'; ctx.shadowOffsetY = 4; ctx.shadowBlur = 10;
+  palavras.forEach((w, i) => {
+    ctx.strokeText(w, x, y);
+    ctx.shadowColor = 'transparent';
+    ctx.fillStyle = i === atual ? '#FFE600' : '#FFFFFF';
+    ctx.fillText(w, x, y);
+    ctx.shadowColor = 'rgba(0,0,0,.55)';
+    x += ctx.measureText(w).width + esp();
+  });
+  ctx.shadowColor = 'transparent';
+}
+
+// ------------------------------------------------------------ 5. gravar o corte 9:16 (canvas + MediaRecorder)
+const FORMATOS = ['video/mp4;codecs=avc1.42E01E,mp4a.40.2', 'video/mp4;codecs=avc1,mp4a', 'video/mp4',
+                  'video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm'];
+const formato = FORMATOS.find(f => window.MediaRecorder && MediaRecorder.isTypeSupported(f)) || '';
+let audioCtx = null, audioDest = null;
+
+function prepararAudio(){                 // chamado dentro do clique (exigência dos navegadores)
+  if (audioCtx) { audioCtx.resume(); return; }
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  const fonte = audioCtx.createMediaElementSource(vid);
+  audioDest = audioCtx.createMediaStreamDestination();
+  fonte.connect(audioDest);               // não liga nos alto-falantes: grava em silêncio
+}
+
+const esperar = (el, ev) => new Promise(r => el.addEventListener(ev, r, { once: true }));
+
+async function gravarCorte(corte, palavras, n, total){
+  const canvas = document.createElement('canvas'); canvas.width = LARG; canvas.height = ALT;
+  const ctx = canvas.getContext('2d', { alpha: false });
+  const blocos = blocosLegenda(palavras, corte.ini, corte.fim);
+  const desenhar = () => {
+    const vw = vid.videoWidth, vh = vid.videoHeight;
+    ctx.fillStyle = '#000'; ctx.fillRect(0, 0, LARG, ALT);
+    if (vw && vh){
+      const esc = Math.max(LARG / vw, ALT / vh), w = vw * esc, h = vh * esc;   // recorte central "cover"
+      ctx.drawImage(vid, (LARG - w) / 2, (ALT - h) / 2, w, h);
+    }
+    desenharLegenda(ctx, blocos, vid.currentTime);
+  };
+
+  vid.pause(); vid.currentTime = corte.ini; await esperar(vid, 'seeked'); desenhar();
+  const stream = canvas.captureStream(30);
+  audioDest.stream.getAudioTracks().forEach(t => stream.addTrack(t));
+  const rec = new MediaRecorder(stream, { mimeType: formato || undefined, videoBitsPerSecond: 8_000_000, audioBitsPerSecond: 160_000 });
+  const partes = []; rec.ondataavailable = e => e.data.size && partes.push(e.data);
+  const fim = new Promise(r => rec.onstop = r);
+
+  rec.start(1000);
+  await vid.play();
+  await new Promise(resolve => {
+    const passo = () => {
+      desenhar();
+      const feito = (vid.currentTime - corte.ini) / (corte.fim - corte.ini);
+      progresso(`Gravando corte ${n} de ${total} (tempo real)`, 78 + 22 * ((n - 1) + Math.min(feito, 1)) / total);
+      if (vid.currentTime >= corte.fim || vid.ended) return resolve();
+      (vid.requestVideoFrameCallback ? vid.requestVideoFrameCallback.bind(vid) : requestAnimationFrame)(passo);
+    };
+    passo();
+  });
+  vid.pause(); rec.stop(); await fim;
+  stream.getVideoTracks().forEach(t => t.stop());
+  return new Blob(partes, { type: (formato || 'video/webm').split(';')[0] });
+}
+
+function mostrarCorte(blob, corte, n, base){
+  const ext = blob.type.includes('mp4') ? 'mp4' : 'webm';
+  const url = URL.createObjectURL(blob), nome = `${base}_${n.toString().padStart(2,'0')}.${ext}`;
+  const texto = corte.tr.map(p => p.w).join(' ').slice(0, 200);
   const el = document.createElement('div'); el.className = 'corte';
-  el.innerHTML = `<video src="${base()}/ver/${jid}/${arq}${q}" controls preload="metadata" playsinline></video>
-    <div class="info"><b>${c.duracao}s · início ${esc(c.inicio)} · nota ${c.nota}</b><br>
-    “${esc(c.texto)}…”<span class="pq">${esc(c.por_que)}</span></div>
-    <a class="dl" href="${base()}/baixar/${jid}/${arq}${q}">⬇ Baixar MP4</a>`;
+  el.innerHTML = `<video src="${url}" controls playsinline preload="metadata"></video>
+    <div class="info"><b>${Math.round(corte.fim - corte.ini)}s · início ${hms(corte.ini)} · nota ${Math.round(corte.nota*100)}</b><br>
+    “${esc(texto)}…”<span class="pq">${esc(corte.pq)}</span></div>
+    <a class="dl" href="${url}" download="${esc(nome)}">⬇ Baixar ${ext.toUpperCase()}</a>`;
   $('cortes').appendChild(el);
 }
+
+// ------------------------------------------------------------ fluxo principal
+$('go').onclick = async () => {
+  if (ocupado) return;
+  if (!arquivo){ $('arq').click(); return; }
+  if (!window.MediaRecorder || !HTMLCanvasElement.prototype.captureStream){ falha('Este navegador não grava vídeo. Use o Chrome atualizado.'); return; }
+  ocupado = true;
+  // libera áudio e vídeo enquanto ainda estamos dentro do toque do usuário
+  prepararAudio();
+  vid.muted = true; vid.play().then(() => { vid.pause(); vid.muted = false; }).catch(() => { vid.muted = false; });
+
+  $('go').disabled = true; $('go').textContent = 'Processando...';
+  $('prog').classList.remove('hide'); $('erro').classList.add('hide'); $('cortes').innerHTML = '';
+  let travaTela = null; try { travaTela = await navigator.wakeLock?.request('screen'); } catch {}
+  try {
+    const [dmin, dmax] = DURACOES[+document.querySelector('[name=dur]:checked').value];
+    const qtd = +$('qtd').value;
+    progresso('Lendo o áudio do vídeo', 2);
+    const audio = await lerAudio(arquivo);
+    if (audio.length / 16000 < dmin) throw new Error(`O vídeo tem menos de ${dmin} s.`);
+    const energia = energiaPorSegundo(audio);
+    const palavras = await transcrever(audio, $('mod').value);
+    if (!palavras.length) throw new Error('Nenhuma fala detectada no vídeo.');
+
+    progresso('Escolhendo os melhores momentos', 77);
+    const cortes = escolherCortes(palavras, energia, qtd, dmin, dmax);
+    if (!cortes.length) throw new Error(`Não achei trechos de ${dmin}–${dmax} s com fala contínua. Tente 60 s.`);
+    if (cortes.length < qtd) aviso(`Só encontrei ${cortes.length} trecho(s) bons com essa duração.`);
+
+    if (vid.readyState < 1) await esperar(vid, 'loadedmetadata');
+    const base = arquivo.name.replace(/\.[^.]+$/, '').replace(/[^\w-]+/g, '-').slice(0, 40) || 'corte';
+    for (let i = 0; i < cortes.length; i++){
+      const blob = await gravarCorte(cortes[i], palavras, i + 1, cortes.length);
+      mostrarCorte(blob, cortes[i], i + 1, base);
+    }
+    progresso('Pronto!', 100);
+    if (!formato.includes('mp4')) aviso('Seu navegador gravou em WEBM (o Chrome atualizado grava em MP4).');
+    $('go').disabled = false; $('go').textContent = 'Fazer outro'; ocupado = false;
+  } catch (e) {
+    console.error(e);
+    falha(e.message || String(e));
+  } finally {
+    try { travaTela?.release(); } catch {}
+  }
+};
 </script>
 </body>
 </html>

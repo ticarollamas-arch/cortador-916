@@ -1,109 +1,69 @@
-<p align="center"><img src="assets/banner.svg" alt="Cortador 9:16 — cortes verticais com legenda por IA rodando localmente" width="100%"></p>
+<p align="center"><img src="assets/banner.svg" alt="Cortador 9:16 — cortes verticais com legenda por IA no navegador" width="100%"></p>
 
 <p align="center">
   <a href="https://cortador-916.vercel.app"><img src="https://img.shields.io/badge/Abrir_o_site-cortador--916.vercel.app-22D3EE?logo=vercel&logoColor=white&labelColor=0B1220" alt="Abrir o site na Vercel"></a>
   <a href="https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fticarollamas-arch%2Fcortador-916&project-name=cortador-916"><img src="https://vercel.com/button" alt="Deploy with Vercel"></a>
 </p>
 
-# Cortador 9:16 — cortes verticais com legenda por IA local
+# Cortador 9:16 — cortes verticais com legenda por IA no navegador
 
-Ferramenta em **Python** que transforma um vídeo longo do YouTube em **cortes verticais 9:16 de 60 ou 90 segundos**, com **legenda gravada no vídeo**. A transcrição roda na própria máquina com **Whisper** (faster-whisper) e o corte é feito pelo **ffmpeg**: sem API de terceiros, sem chave, sem custo por minuto.
+Site estático que transforma um vídeo longo em **cortes verticais 9:16 de 60 ou 90 segundos**, com **legenda gravada no vídeo**. Tudo acontece **no navegador de quem usa**, inclusive no celular: a transcrição roda com **Whisper** via transformers.js (WebGPU ou WebAssembly) e o corte é gravado com canvas + MediaRecorder. Não há servidor nem API paga, e o vídeo não sai do aparelho.
 
-A interface pode rodar localmente ou ficar hospedada na **Vercel**, apontando para o servidor de processamento no seu PC ou numa VPS.
+Hospedado na **Vercel**: [cortador-916.vercel.app](https://cortador-916.vercel.app).
 
 > Use em vídeos próprios ou de criadores que autorizaram os cortes. Publicar cortes de terceiros sem permissão viola direitos autorais e pode gerar *strike* no canal.
 
-<p align="center"><img src="assets/interface.png" alt="Interface do Cortador 9:16 com dois cortes prontos para download" width="640"></p>
+<p align="center"><img src="assets/interface.png" alt="Interface do Cortador 9:16 no celular com um corte pronto para download" width="320"></p>
 
 ## Recursos
 
 | Etapa | O que faz | Como |
 |---|---|---|
-| Download | Baixa o vídeo em até 1080p | `yt-dlp` |
-| Transcrição | Texto com tempo de cada palavra | `faster-whisper` local, com cache |
+| Entrada | Vídeo enviado do aparelho (MP4, MOV, WEBM) | `<input type="file">`, sem upload |
+| Transcrição | Texto com tempo aproximado de cada palavra | Whisper (tiny, base ou small) no navegador, modelo em cache |
 | Escolha dos trechos | Pontua candidatos que começam e terminam em fim de frase | ritmo da fala, volume, palavras de gancho, perguntas e abertura |
-| Corte | Recorte central 9:16 em 1080×1920 | `ffmpeg` + `libx264` |
-| Legenda | Blocos curtos em caixa alta com a palavra falada destacada | `.ass` gravado no vídeo |
+| Corte | Recorte central 9:16 em 1080×1920 | canvas + `MediaRecorder` (MP4 H.264 no Chrome atual) |
+| Legenda | Blocos curtos em caixa alta com a palavra falada em amarelo | desenhada quadro a quadro no canvas |
 
-- **Explicável:** cada corte vem com a nota e os critérios que o fizeram ser escolhido.
+- **Explicável:** cada corte mostra a nota e os critérios que o fizeram ser escolhido.
 - **Duração:** opção 60 s gera cortes de 45–60 s; opção 90 s, de 75–90 s.
-- **Download direto** de cada corte em MP4, com prévia no navegador.
-- **Token opcional** para expor o servidor numa VPS sem deixá-lo aberto.
-
-## Arquitetura
-
-```
-index.html      interface estática  ─┐  hospedada na Vercel (ou servida pelo app.py)
-                                     │  fetch + CORS
-servidor/       app.py + cortador.py ┘  roda no seu PC ou VPS: yt-dlp, Whisper, ffmpeg
-```
-
-A Vercel hospeda apenas a interface. O processamento não cabe numa função serverless: precisa de ffmpeg, de um modelo de ~460 MB, leva minutos por vídeo e o YouTube bloqueia downloads vindos de data centers.
-
-## Instalação
-
-### Servidor (PC)
-
-Requisitos: **Python 3.10+** e **ffmpeg**.
-
-```bash
-git clone https://github.com/ticarollamas-arch/cortador-916.git
-cd cortador-916/servidor
-./iniciar.sh            # Windows: iniciar.bat
-```
-
-Na primeira execução cria o `venv`, instala as dependências e baixa o modelo Whisper uma única vez. Depois abre `http://localhost:8765`.
-
-### Servidor (VPS com Docker)
-
-```bash
-docker build -t cortador -f servidor/Dockerfile .
-docker run -d -p 8765:8765 -e CORTADOR_TOKEN=um-token-longo \
-  -e CORTADOR_ORIGENS=https://seu-projeto.vercel.app \
-  -v cortador-modelos:/root/.cache cortador
-```
-
-Coloque um proxy com HTTPS na frente (Caddy ou Nginx): uma página da Vercel (HTTPS) não pode chamar um servidor `http://` público.
-
-### Interface na Vercel
-
-1. Clique em **Deploy with Vercel** no topo deste README (ou importe o repositório em **vercel.com/new**).
-2. Deixe **Framework Preset** em *Other* e os campos de build vazios: a página estática fica na raiz e é publicada sem build.
-3. Abra o site, expanda **Servidor de processamento** e informe o endereço (`http://localhost:8765` ou `https://sua-vps`) e o token, se houver.
+- **Privado:** o vídeo nunca é enviado; só o modelo de IA é baixado (uma vez) do Hugging Face.
 
 ## Como usar
 
-Na interface: cole o link → escolha **60 s** ou **90 s** e quantos cortes → **Começar** → **⬇ Baixar MP4**.
+1. Abra o site, toque em **Escolher vídeo do aparelho**.
+2. Escolha **60 s** ou **90 s**, quantos cortes e a qualidade da IA.
+3. Toque em **Começar** e deixe a tela aberta.
+4. Toque em **⬇ Baixar MP4** em cada corte.
 
-Pela linha de comando:
+Por que não aceita link do YouTube: o navegador não pode baixar vídeos do YouTube (bloqueio de CORS) e a Vercel não roda downloads nem ffmpeg. Para usar link, veja o modo servidor abaixo.
+
+## Deploy na Vercel
+
+Clique em **Deploy with Vercel** no topo, ou importe o repositório em **vercel.com/new**. O `vercel.json` já define o build (`build.sh` copia a página para `public/`) e os cabeçalhos `COOP`/`COEP`, que liberam várias threads para a IA.
+
+## Modo servidor (opcional, aceita link do YouTube)
+
+A pasta `servidor/` traz a versão em Python (yt-dlp + faster-whisper + ffmpeg), para rodar no PC ou numa VPS:
 
 ```bash
 cd servidor
-python cortador.py "https://youtube.com/watch?v=XXXX" --auto 3 --max 60
-python cortador.py "https://youtube.com/watch?v=XXXX" --inicio 1:20 --fim 2:05
-python cortador.py video.mp4 --inicio 0:30 --fim 1:10 --sem-legenda
+./iniciar.sh                                              # Windows: iniciar.bat
+python cortador.py "https://youtu.be/XXXX" --auto 3 --max 60
 ```
-
-### Variáveis do servidor
-
-| Variável | Padrão | Uso |
-|---|---|---|
-| `CORTADOR_MODELO` | `small` | `tiny`, `base`, `small`, `medium`, `large-v3` |
-| `CORTADOR_IDIOMA` | `pt` | idioma da fala |
-| `CORTADOR_TOKEN` | vazio | exige token em todas as rotas da API |
-| `CORTADOR_ORIGENS` | `*` | origens permitidas no CORS (ex.: domínio da Vercel) |
-| `CORTADOR_HOST` / `CORTADOR_PORTA` | `127.0.0.1` / `8765` | endereço de escuta |
 
 ## Limitações
 
-- Em CPU, o modelo `small` leva perto do tempo do vídeo para transcrever (1 h de vídeo ≈ 1 h). A transcrição fica em cache, então novos cortes do mesmo vídeo saem rápido. Com GPU NVIDIA é bem mais rápido.
+- O tempo de cada palavra é estimado dentro de cada frase do Whisper, então o destaque pode adiantar ou atrasar um pouco.
+- A gravação é em tempo real: um corte de 60 s leva 60 s, com a tela ligada.
+- Vídeos muito longos (mais de ~20 min) podem esgotar a memória do celular ao ler o áudio.
+- Em CPU, a transcrição pode levar mais que a duração do vídeo; com WebGPU é bem mais rápida.
 - O recorte 9:16 é central: não segue o rosto de quem fala.
-- A escolha dos trechos é heurística (texto e volume), não entende contexto. Revise antes de publicar.
-- Mudanças no YouTube podem quebrar o download até o `yt-dlp` ser atualizado (`pip install -U yt-dlp`).
+- Navegadores sem gravação em MP4 salvam em WEBM.
 
 ## Tecnologias
 
-Python 3 · faster-whisper · yt-dlp · ffmpeg · HTML/CSS/JS sem framework · Vercel · Docker
+JavaScript (sem framework) · transformers.js · Whisper (ONNX) · WebGPU/WebAssembly · Canvas · MediaRecorder · Vercel · Python (modo servidor)
 
 ## Licença
 
